@@ -1,0 +1,6 @@
+Mac OS X and missing libraries:
+
+before running the binaries try
+	
+  export DYLD_LIBRARY_PATH="/usr/local/lib/gensolver:/usr/local/lib/flexpars"
+

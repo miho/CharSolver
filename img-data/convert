@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for i in $(ls *.png)
+do
+	src/ai-convert $i $( echo $i | sed 's/png/img/')
+done
+
+exit 0

@@ -29,3 +29,6 @@ CONFIGURE_FILE(
 
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_modules/cmake_uninstall.cmake")
+
+install(DIRECTORY data DESTINATION share/charsolver/)
+install(DIRECTORY img-data DESTINATION share/charsolver/)

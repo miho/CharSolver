@@ -24,13 +24,15 @@ include_directories(
 			${GENSOLVER_INCLUDE_DIR}
 	      	 	)
 
-ADD_EXECUTABLE( charsolver ${_CHARSOLVER_SRCS} )
-
 # CMAKE WARNING SUGGESTS:
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+ADD_EXECUTABLE( charsolver
+  ${_CHARSOLVER_SRCS}
+  ${_UIS_H}
+  ${_MOC_SRCS})
 
 ADD_EXECUTABLE( charsolver-convert 
   ${_IMG_CONVERT_SRCS}
@@ -39,6 +41,10 @@ ADD_EXECUTABLE( charsolver-convert
 
 
 target_link_libraries( charsolver
+			${QT_LIBRARIES}
+			${QT_QTGUI_TOOLS_LIBRARIES}
+			${QT_QT_GUI_LIBRARIES}
+
 			${GENSOLVER_LIBRARY}
 			${FLEXPARS_LIBRARY}
 			)

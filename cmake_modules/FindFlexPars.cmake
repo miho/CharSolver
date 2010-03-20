@@ -1,6 +1,6 @@
 FIND_PATH(FLEXPARS_INCLUDE_DIR DoubleField.h /usr/include/flexpars /usr/local/include/flexpars)
 
-FIND_LIBRARY(FLEXPARS_LIBRARY NAMES flexpars PATHS /usr/lib /usr/local/lib /usr/lib/flexpars /usr/local/lib/flexpars ) 
+FIND_LIBRARY(FLEXPARS_LIBRARY NAMES flexpars PATHS /usr/lib64 /usr/local/lib64 /usr/lib64/flexpars /usr/local/lib64/flexpars /usr/lib /usr/local/lib /usr/lib/flexpars /usr/local/lib/flexpars ) 
 
 IF (FLEXPARS_INCLUDE_DIR AND FLEXPARS_LIBRARY)
    SET(FLEXPARS_FOUND TRUE)

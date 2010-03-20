@@ -1,6 +1,6 @@
 /**************************************************************************
-*   Copyright (C) 2007 by Michael Hoffer and Kenneth Aar                  *
-*   info@michaelhoffer.de, kenneth@grafikern.no                           *
+*   Copyright (C) 2007-2010 by Michael Hoffer                             *
+*   info@michaelhoffer.de                                                 *
 *                                                                         *
 *   This program is free software; you can redistribute it and/or modify  *
 *   it under the terms of the GNU Library General Public License as       *

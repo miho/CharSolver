@@ -1,5 +1,5 @@
 /**************************************************************************
-*   Copyright (C) 2006 by Michael Hoffer                                  *
+*   Copyright (C) 2006-2010 by Michael Hoffer                             *
 *   info@michaelhoffer.de                                                 *
 *                                                                         *
 *   This program is free software; you can redistribute it and/or modify  *
@@ -25,181 +25,296 @@
 #include <list>
 #include <genutil.h>
 
+#include "File.h"
+#include "HeaderTag.h"
+#include "DoubleField.h"
+#include "IntegerField.h"
+
+#include <QDir>
+#include <QStringList>
+
 using namespace std;
 
 class CharNetSolver : public NetSolver
 {
-	public:
-		CharNetSolver(): NetSolver()
-		{
-			vector <int> layerSize;
-			layerSize.push_back( 30 );
-			//layerSize.push_back( 50 );
-                        layerSize.push_back( 30 );
-			layerSize.push_back( 20 );
-			layerSize.push_back( 10 );
+        public:
+                CharNetSolver(string directory, vector<int> layers): NetSolver()
+                {
 
-			net.createNet( 256, 1, layerSize );
+                    dataFolder = directory;
 
+                        //vector <int> layerSize;
+                        //layerSize.push_back( 30 );
+                        ////layerSize.push_back( 50 );
+                        //layerSize.push_back( 30 );
+                        //layerSize.push_back( 20 );
+                        //layerSize.push_back( 10 );
 
-                        for ( int i = 1; i <= 12; i++ )
-			{
-				stringstream stream;
+                        net.createNet( 256, 1, layers );
 
-				stream << "a0" << i << ".img";
+                        QDir trueDir(QString(directory.c_str())+QString("/true"));
 
+                        QStringList filters;
 
+                        filters << "*.img";
 
-				trueIn.push_back( new NNetInput( "./data/true/" + stream.str() ) );
-			}
+                        QStringList fileListTrue = trueDir.entryList (filters);
 
-			vector <string> letters;
+                        for ( int i = 0; i < fileListTrue.size(); i++ )
+                        {
+                            std::stringstream stream;
+                            stream << dataFolder << "/true/" << fileListTrue.at(i).toStdString();
 
-			letters.push_back( "b" );
-                        letters.push_back( "c" );
-                        letters.push_back( "d" );
+                            trueIn.push_back( new NNetInput( stream.str() ) );
+                        }
+
+                        QDir falseDir(QString(directory.c_str())+QString("/false"));
+                        QStringList fileListFalse = falseDir.entryList (filters);
+
+                        for ( int i = 0; i < fileListFalse.size(); i++ )
+                        {
+                            std::stringstream stream;
+                            stream << dataFolder << "/false/" << fileListFalse.at(i).toStdString();
+
+                            falseIn.push_back( new NNetInput( stream.str() ) );
+                        }
+
+                        //vector <string> letters;
+
+                        //letters.push_back( "b" );
+                        //letters.push_back( "c" );
+                        //letters.push_back( "d" );
                         //letters.push_back( "e" );
 
-			for ( int j = 0; j < letters.size();j++ )
-			{
-				for ( int i = 1; i <= 5; i++ )
-				{
-					stringstream stream;
+                        //for ( int j = 0; j < letters.size();j++ )
+                        //{
+                        //        for ( int i = 1; i <= 5; i++ )
+                        //        {
+                        //                stringstream stream;
 
-					stream << letters[j] << "0" << i << ".img";
+                        //                stream << letters[j] << "0" << i << ".img";
 
-					falseIn.push_back( new NNetInput( "./data/false/" + stream.str() ) );
-				}
-			}
+                        //                falseIn.push_back( new NNetInput( dataFolder + "/false/" + stream.str() ) );
+                        //        }
+                        //}
+                }
+
+                CharNetSolver( string fileName ): NetSolver( fileName )
+                {
+                        // code
+                }
 
 
+                virtual void fitnessFunction();
 
-		}
-
-		CharNetSolver( string fileName ): NetSolver( fileName )
-		{
-			// code
-		}
-		virtual void fitnessFunction();
-
-		vector<NNetInput*> trueIn;
-		vector<NNetInput*> falseIn;
+                vector<NNetInput*> trueIn;
+                vector<NNetInput*> falseIn;
+                string dataFolder;
 };
 
 void CharNetSolver::fitnessFunction()
 {
-	//bool reachedTOL = false;
+        //bool reachedTOL = false;
 
-	int trueCases = 0;
+        int trueCases = 0;
 
-	for ( int i = 0; i < trueIn.size(); i++ )
-	{
-		net.reset();
+        for ( int i = 0; i < trueIn.size(); i++ )
+        {
+                net.reset();
 
-		net.setInputs( *trueIn[i] );
+                net.setInputs( *trueIn[i] );
 
-		net.sendSignals();
+                net.sendSignals();
 
-		//cout << "OUT-TRUE: " << net.output( 0 )->finalOutput() << endl;
+                //cout << "OUT-TRUE: " << net.output( 0 )->finalOutput() << endl;
 
-		if ( net.output( 0 )->finalOutput() > 1 )
-		{
-			trueCases++;
-		}
-		else
-		{
-			trueCases--;
-		}
-	}
-	for ( int i = 0; i < falseIn.size(); i++ )
-	{
-		net.reset();
+                if ( net.output( 0 )->finalOutput() > 1 )
+                {
+                        trueCases++;
+                }
+                else
+                {
+                        trueCases--;
+                }
+        }
+        for ( int i = 0; i < falseIn.size(); i++ )
+        {
+                net.reset();
 
-		net.setInputs( *falseIn[i] );
+                net.setInputs( *falseIn[i] );
 
-		net.sendSignals();
+                net.sendSignals();
 
-		//cout << "OUT-FALSE: " << net.output( 0 )->finalOutput() << endl;
+                //cout << "OUT-FALSE: " << net.output( 0 )->finalOutput() << endl;
 
-		if ( net.output( 0 )->finalOutput() < - 1 )
-		{
-			trueCases++;
-		}
-		else
-		{
-			trueCases--;
-		}
-	}
+                if ( net.output( 0 )->finalOutput() < - 1 )
+                {
+                        trueCases++;
+                }
+                else
+                {
+                        trueCases--;
+                }
+        }
 
 
-	int maxTrueCases = trueIn.size() + falseIn.size();
+        int maxTrueCases = trueIn.size() + falseIn.size();
 
-	double threshold = maxTrueCases ;
+        double threshold = maxTrueCases ;
 
-	if ( trueCases > 0 )
-	{
-		cout << " Size: " << actualEntity->size();
-		cout << " Score: " << trueCases << endl;
-	}
+        if ( trueCases > 0 )
+        {
+                cout << " Size: " << actualEntity->size();
+                cout << " Score: " << trueCases << endl;
+        }
 
-	
-	if ( trueCases >= threshold )
-	{
-		net.saveNet( "data/solver.net" );
-		this->foundSolution();
-	}
 
-	if ( trueCases < 1 ) trueCases = 1;
-	if ( trueCases > 10 ) trueCases += 100;
-	if ( trueCases > 12 ) trueCases += 1000;
-	if ( trueCases > 14 ) trueCases += 1000;
-	if ( trueCases > 16 ) trueCases += 10000;
+        if ( trueCases >= threshold )
+        {
+                net.saveNet( dataFolder + "/solver.net" );
+                this->foundSolution();
+        }
+
+        if ( trueCases < 1 ) trueCases = 1;
+        if ( trueCases > 10 ) trueCases += 100;
+        if ( trueCases > 12 ) trueCases += 1000;
+        if ( trueCases > 14 ) trueCases += 1000;
+        if ( trueCases > 16 ) trueCases += 10000;
         if ( trueCases > 18 ) trueCases += 100000;
         if ( trueCases > 20 ) trueCases += 1000000;
         if ( trueCases > 22 ) trueCases += 1000000;
         if ( trueCases > 24 ) trueCases += 10000000;
         if ( trueCases > 25 ) trueCases += 100000000;
+        if ( trueCases > 30 ) trueCases += 1000000000;
+        if ( trueCases > 35 ) trueCases += 10000000000;
+        if ( trueCases > 40 ) trueCases += 100000000000;
 
 
 
-	actualEntity->setFitness( trueCases*trueCases*trueCases);
-	
+        actualEntity->setFitness( trueCases*trueCases*trueCases);
+
+}
+
+
+void usage() {
+     std::cout << ">> Usage: charsolver training folder" << std::endl;
+     std::cout << "          charsolver recognition netfile imgfile" << std::endl;
+}
+
+bool training(string dataFolder) {
+
+
+    HeaderTag *header = new HeaderTag();
+    IntegerField *populationSize = new IntegerField("population-size",1);
+    IntegerField *maxIterations = new IntegerField("max-iterations",1);
+    DoubleField *mutationRate = new DoubleField( "mutation-rate", 1 );
+    DoubleField *crossoverRate = new DoubleField( "crossover-rate", 1 );
+    IntegerField *netLayers = new IntegerField("net-layers");
+
+    File f;
+
+    f.addElement( header );
+    f.addElement( populationSize );
+    f.addElement( maxIterations );
+    f.addElement( mutationRate );
+    f.addElement( crossoverRate );
+    f.addElement( netLayers );
+
+    bool success = f.load(dataFolder+"/charsolver.conf");
+
+    if (!success) {
+        return false;
+    }
+
+    if (header->getFileType()!="CharSolver-File") {
+        std::cerr << ">> Error: unknown file format of config file!" << std::endl;
+        return false;
+    }
+
+    if (header->getVersion()!=0.1) {
+        std::cerr << ">> Error: version " << header->getVersion() << " of config file not supported!" << std::endl;
+        return false;
+    }
+
+    std::cout << "------------- PROBLEM -------------" << std::endl;
+
+    std::cout << ">> population size:\t" << populationSize->element(0)->getValue() << std::endl;
+    std::cout << ">> max iterations:\t" << maxIterations->element(0)->getValue() << std::endl;
+    std::cout << ">> crossover rate:\t" << crossoverRate->element(0)->getValue() << std::endl;
+    std::cout << ">> mutation rate:\t" << mutationRate->element(0)->getValue() << std::endl;
+
+    stringstream stream;
+    vector<int> layers;
+
+    for (int i = 0; i < netLayers->elements().size();i++) {
+        string splitChar = ", ";
+        if (i == netLayers->elements().size()-1) {
+            splitChar="";
+        }
+        stream << netLayers->element(i)->getValue() << splitChar;
+        layers.push_back(netLayers->element(i)->getValue());
+    }
+
+
+    std::cout << ">> net leyers:\t\t" << stream.str() << std::endl;
+
+    std::cout << "-----------------------------------" << std::endl;
+
+    CharNetSolver solver(dataFolder,layers);
+
+    solver.enableRealRandom( true );
+
+    solver.initialize( populationSize->element(0)->getValue(), -10, 10 );
+
+    solver.setEqualCrossPoints( true );
+    solver.enableCloneParents( true );
+
+    solver.setMutationRate( mutationRate->element(0)->getValue() );
+    solver.setCrossOverRate( crossoverRate->element(0)->getValue() );
+
+    solver.startSolving( maxIterations->element(0)->getValue() );
+
+    return true;
 }
 
 
 int main( int argc, char * argv[] )
 {
 
+    if (argc == 1) {
+        std::cerr << ">> Error: missing arguments!" << std::endl;
+        usage();
+    } else if (argc == 2) {
+        std::cerr << ">> Error: missing file argument!" << std::endl;
+        usage();
+    } else if (argc == 3) {
+        if (string(argv[1])=="training") {
+            std::cout << ">> Mode: training" << std::endl;
+            training(argv[2]);
+        } else {
+            std::cerr << ">> Unknown mode: \"" << argv[1] << "\" or too many arguments!" << std::endl;
+            usage();
+        }
+    } else if (argc==4) {
+        if (string(argv[1])=="recognition") {
+            std::cout << ">> Mode: recognition" << std::endl;
+            NNet net( argv[2] );
 
-	if ( argc == 1 )
-	{
+            net.reset();
 
+            NNetInput *input = new NNetInput( argv[3] );
+            net.setInputs( *input );
+            net.sendSignals();
+            cout << "VALUE: " << net.output( 0 )->finalOutput() << endl;
 
-		CharNetSolver solver;
+        }  else {
+            std::cerr << ">> Unknown mode: \"" << argv[1] << "\" or too many arguments!" << std::endl;
+            usage();
+        }
+    } else if (argc > 4) {
+        std::cerr << ">> Error: too many arguments!" << std::endl;
+        usage();
+    }
 
-                std::cout << argc << std::endl;
-
-		solver.enableRealRandom( true );
-
-                solver.initialize( 100, -10, 10 );
-
-		solver.setEqualCrossPoints( true );
-		solver.enableCloneParents( true );
-                solver.setMutationRate( 0.003 );
-                solver.setCrossOverRate( 0.6 );
-
-                solver.startSolving( 10000 );
-	}
-	if ( argc == 2 )
-	{
-		NNet net( "./data/solver.net" );
-
-		net.reset();
-
-		NNetInput *input = new NNetInput( argv[1] );
-		net.setInputs( *input );
-		net.sendSignals();
-		cout << "VALUE: " << net.output( 0 )->finalOutput() << endl;
-	}
-	return 0;
+    return 0;
 }
